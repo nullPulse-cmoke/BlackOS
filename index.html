@@ -1,0 +1,760 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BlackOS - macOS Style</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      user-select: none;
+    }
+
+    body {
+      background: url('https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=2564&auto=format&fit=crop') center/cover no-repeat;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      background-color: #1e1e1e;
+      transition: background 0.5s ease;
+    }
+
+    /* ——— BOOT SCREEN ——— */
+    #bootScreen {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: #000;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      z-index: 2000;
+      transition: opacity 0.5s ease;
+    }
+    #bootScreen.hide { opacity: 0; pointer-events: none; }
+    .boot-logo { width: 100px; height: 100px; object-fit: contain; margin-bottom: 50px; }
+    .boot-progress-bg { width: 200px; height: 4px; background: #333; border-radius: 2px; overflow: hidden; }
+    .boot-progress-bar { height: 100%; width: 0%; background: #fff; border-radius: 2px; }
+    .boot-progress-bar.animate { animation: load 2.5s ease-in-out forwards; }
+    @keyframes load { 0% { width: 0%; } 100% { width: 100%; } }
+
+    /* ——— LOGIN SCREEN ——— */
+    #loginScreen {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      z-index: 1500;
+      backdrop-filter: blur(30px);
+      -webkit-backdrop-filter: blur(30px);
+      background: rgba(0, 0, 0, 0.4);
+      transition: opacity 0.5s ease, transform 0.5s ease;
+      opacity: 0;
+      transform: scale(1.05);
+      pointer-events: none;
+    }
+    #loginScreen.active { opacity: 1; transform: scale(1); pointer-events: all; }
+    #loginScreen.hide { opacity: 0; transform: scale(0.95); pointer-events: none; }
+    .login-avatar { width: 90px; height: 90px; border-radius: 50%; background: linear-gradient(135deg, #ff7b00, #ff0055); margin-bottom: 15px; display: flex; justify-content: center; align-items: center; font-size: 2.5rem; box-shadow: 0 10px 25px rgba(0,0,0,0.3); }
+    .user-name { color: #fff; font-size: 1.2rem; font-weight: 600; margin-bottom: 25px; }
+    .login-submit-btn { background: rgba(255, 255, 255, 0.25); border: 1px solid rgba(255, 255, 255, 0.2); color: #fff; padding: 8px 24px; border-radius: 20px; font-size: 0.95rem; cursor: pointer; transition: background 0.2s; backdrop-filter: blur(10px); }
+    .login-submit-btn:hover { background: rgba(255, 255, 255, 0.4); }
+
+    /* ——— DESKTOP ——— */
+    #desktop { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 100; display: flex; flex-direction: column; opacity: 0; pointer-events: none; transition: opacity 0.5s ease; }
+    #desktop.active { opacity: 1; pointer-events: all; }
+
+    .menubar { height: 24px; background: rgba(255, 255, 255, 0.15); backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px); border-bottom: 1px solid rgba(255, 255, 255, 0.1); display: flex; justify-content: space-between; align-items: center; padding: 0 16px; color: #fff; font-size: 13px; font-weight: 500; z-index: 9999; }
+    .menubar-left, .menubar-right { display: flex; align-items: center; gap: 14px; position: relative; }
+    .menubar-item { cursor: default; padding: 2px 6px; border-radius: 4px; position: relative; }
+    .menubar-item:hover { background: rgba(255, 255, 255, 0.2); }
+
+    /* Apple Dropdown Menu */
+    .apple-dropdown { position: absolute; top: 24px; left: 0; background: rgba(30, 30, 30, 0.95); backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.1); border-radius: 6px; width: 180px; display: none; flex-direction: column; padding: 5px 0; box-shadow: 0 10px 25px rgba(0,0,0,0.3); z-index: 10000; }
+    .dropdown-item { color: #fff; padding: 6px 15px; font-size: 13px; cursor: default; }
+    .dropdown-item:hover { background: rgba(255,255,255,0.15); }
+    .dropdown-divider { height: 1px; background: rgba(255,255,255,0.1); margin: 4px 0; }
+
+    .workspace { flex: 1; position: relative; padding: 20px; }
+    .desktop-icons { position: absolute; top: 20px; right: 20px; display: flex; flex-direction: column; gap: 25px; }
+    .desktop-icon { display: flex; flex-direction: column; align-items: center; width: 75px; cursor: default; text-align: center; }
+    .icon-placeholder { font-size: 2.5rem; width: 50px; height: 50px; display: flex; justify-content: center; align-items: center; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.3)); }
+    .icon-name { color: #fff; font-size: 12px; font-weight: 500; text-shadow: 0 1px 3px rgba(0,0,0,0.8); padding: 2px 4px; border-radius: 4px; margin-top: 4px; }
+    .desktop-icon:focus-within .icon-name { background-color: rgba(0, 122, 255, 0.8); }
+
+    /* ——— WINDOWS ——— */
+    .window { position: absolute; top: 120px; left: 150px; width: 620px; height: 420px; background: rgba(28, 28, 30, 0.85); backdrop-filter: blur(30px); -webkit-backdrop-filter: blur(30px); border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 12px; box-shadow: 0 20px 50px rgba(0,0,0,0.5); display: flex; flex-direction: column; overflow: hidden; z-index: 200; display: none; opacity: 0; transform: scale(0.85); transition: opacity 0.22s cubic-bezier(0.25, 1, 0.5, 1), transform 0.22s cubic-bezier(0.25, 1, 0.5, 1); }
+    .window.show { display: flex; opacity: 1; transform: scale(1); }
+    
+    .window-header { height: 38px; background: rgba(44, 44, 46, 0.6); display: flex; align-items: center; padding: 0 15px; position: relative; border-bottom: 1px solid rgba(255, 255, 255, 0.05); cursor: move; }
+    .window-buttons { display: flex; gap: 8px; position: absolute; left: 15px; z-index: 10; }
+    .win-btn { width: 12px; height: 12px; border-radius: 50%; border: none; cursor: pointer; }
+    .btn-close { background: #ff5f56; }
+    .btn-minimize { background: #ffbd2e; }
+    .btn-maximize { background: #27c93f; }
+    .window-title { width: 100%; text-align: center; color: #fff; font-size: 13px; font-weight: 600; letter-spacing: 0.3px; }
+    .window-content { flex: 1; color: #fff; overflow: auto; position: relative; }
+    
+    /* Finder Layout */
+    .finder-layout { display: flex; height: 100%; }
+    .finder-sidebar { width: 150px; background: rgba(255, 255, 255, 0.03); border-right: 1px solid rgba(255, 255, 255, 0.05); padding: 10px; font-size: 13px; }
+    .sidebar-item { padding: 6px 8px; border-radius: 6px; margin-bottom: 2px; color: #e5e5ea; cursor: default; }
+    .sidebar-item:hover { background: rgba(255, 255, 255, 0.05); }
+    .sidebar-item.active { background: rgba(255, 255, 255, 0.1); }
+    .finder-main { flex: 1; padding: 20px; display: flex; gap: 20px; flex-wrap: wrap; content-visibility: auto; }
+    .finder-item { display: flex; flex-direction: column; align-items: center; width: 70px; text-align: center; cursor: default; }
+    .finder-item span:first-child { font-size: 2.5rem; }
+    .finder-item span:last-child { font-size: 12px; margin-top: 4px; color: #fff; }
+
+    /* Terminal Layout */
+    .terminal-body { width: 100%; height: 100%; background: #000; font-family: 'Courier New', monospace; padding: 10px; color: #00ff00; display: flex; flex-direction: column; }
+    .terminal-output { flex: 1; overflow-y: auto; white-space: pre-wrap; font-size: 14px; line-height: 1.4; }
+    .terminal-input-line { display: flex; gap: 5px; align-items: center; margin-top: 5px; }
+    .terminal-prompt { color: #00ff00; font-weight: bold; }
+    .terminal-input { flex: 1; background: transparent; border: none; outline: none; color: #00ff00; font-family: 'Courier New', monospace; font-size: 14px; }
+
+    /* Settings Layout */
+    .settings-layout { padding: 20px; }
+    .settings-title { font-size: 18px; margin-bottom: 15px; font-weight: 600; }
+    .wallpaper-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; }
+    .wallpaper-thumb { width: 100%; height: 90px; border-radius: 8px; border: 2px solid transparent; cursor: pointer; background-size: cover; background-position: center; transition: border 0.2s; }
+    .wallpaper-thumb:hover { border-color: rgba(255,255,255,0.5); }
+
+    /* Browser Layout */
+    .browser-frame { width: 100%; height: 100%; border: none; background: #fff; }
+
+    /* ——— DOCK PANEL ——— */
+    .dock-container { width: 100%; display: flex; justify-content: center; padding-bottom: 10px; z-index: 900; pointer-events: none; }
+    .dock { background: rgba(255, 255, 255, 0.2); backdrop-filter: blur(35px); -webkit-backdrop-filter: blur(35px); border: 1px solid rgba(255, 255, 255, 0.2); padding: 6px 12px; border-radius: 20px; display: flex; align-items: flex-end; gap: 12px; box-shadow: 0 20px 40px rgba(0,0,0,0.4); pointer-events: all; height: 64px; }
+    .dock-item { width: 48px; height: 48px; display: flex; justify-content: center; align-items: center; font-size: 2.2rem; cursor: default; transition: width 0.15s, height 0.15s; transform-origin: bottom; position: relative; }
+    
+    /* ——— MODAL WINDOW ——— */
+    .modal { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.6); display: none; align-items: center; justify-content: center; z-index: 3000; }
+    .modal.show { display: flex; }
+    .modal-content { background: rgba(28, 28, 30, 0.95); backdrop-filter: blur(30px); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 30px; max-width: 500px; width: 90%; box-shadow: 0 20px 60px rgba(0,0,0,0.6); animation: modalIn 0.3s ease; }
+    @keyframes modalIn { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }
+    .modal-header { font-size: 18px; font-weight: 600; color: #fff; margin-bottom: 15px; }
+    .modal-body { color: #e5e5ea; font-size: 14px; line-height: 1.6; margin-bottom: 20px; white-space: pre-wrap; }
+    .modal-footer { display: flex; gap: 10px; justify-content: flex-end; }
+    .modal-btn { background: rgba(0, 122, 255, 0.8); color: #fff; border: none; padding: 8px 20px; border-radius: 6px; cursor: pointer; font-size: 14px; }
+    .modal-btn:hover { background: rgba(0, 122, 255, 1); }
+
+    /* ——— WELCOME SCREEN ——— */
+    #welcomeScreen { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: linear-gradient(135deg, rgba(30,30,34,0.9), rgba(60,60,70,0.9)); display: none; align-items: center; justify-content: center; z-index: 1800; opacity: 0; transition: opacity 0.4s ease; }
+    #welcomeScreen.show { display: flex; opacity: 1; }
+    .welcome-card { background: rgba(28, 28, 30, 0.85); backdrop-filter: blur(30px); border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; padding: 50px; max-width: 600px; text-align: center; animation: welcomeIn 0.5s ease; }
+    @keyframes welcomeIn { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+    .welcome-title { font-size: 32px; font-weight: 700; color: #fff; margin-bottom: 10px; }
+    .welcome-subtitle { font-size: 14px; color: #a1a1a6; margin-bottom: 30px; }
+    .welcome-info { background: rgba(255,255,255,0.05); padding: 20px; border-radius: 10px; margin-bottom: 20px; text-align: left; color: #e5e5ea; line-height: 1.8; font-size: 13px; }
+    .welcome-info strong { color: #fff; }
+    .welcome-footer { margin-top: 25px; }
+    .welcome-btn { background: rgba(0, 122, 255, 0.8); color: #fff; border: none; padding: 10px 30px; border-radius: 8px; cursor: pointer; font-size: 15px; font-weight: 600; }
+    .welcome-btn:hover { background: rgba(0, 122, 255, 1); }
+    .linkedin-link { color: #0a66c2; text-decoration: none; font-weight: 600; }
+    .linkedin-link:hover { text-decoration: underline; }
+
+    /* ——— CALCULATOR ——— */
+    .calculator { width: 100%; height: 100%; background: #1c1c1e; display: flex; flex-direction: column; padding: 0; }
+    .calc-display { background: #000; color: #fff; font-size: 2.5rem; text-align: right; padding: 20px; border-bottom: 1px solid rgba(255,255,255,0.1); word-wrap: break-word; word-break: break-all; }
+    .calc-buttons { flex: 1; display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px; background: rgba(255,255,255,0.05); padding: 1px; }
+    .calc-btn { background: #2c2c2e; border: none; color: #fff; font-size: 1.2rem; cursor: pointer; border-radius: 0; font-weight: 500; transition: background 0.1s; }
+    .calc-btn:hover { background: #3c3c3e; }
+    .calc-btn:active { background: #1c1c1e; }
+    .calc-btn.operator { background: #ff9500; color: #fff; }
+    .calc-btn.operator:hover { background: #ffb143; }
+    .calc-btn.equals { background: #34c759; grid-column: span 2; }
+    .calc-btn.equals:hover { background: #5ac976; }
+  </style>
+</head>
+<body>
+  <div id="welcomeScreen">
+    <div class="welcome-card">
+      <div class="welcome-title">Welcome to Black OS</div>
+      <div class="welcome-subtitle">v2026.07 • System Ready</div>
+      <div class="welcome-info">
+        <strong>Administrator Information:</strong><br>
+        <br>Name: Khabibullayev<br>
+        Username: khabibullayev701<br>
+        Role: System Administrator<br>
+        Status: Active Session<br>
+        <br>Connect with me:<br>
+        <a href="https://linkedin.com/in/khabibullayev701" target="_blank" class="linkedin-link">LinkedIn Profile</a>
+      </div>
+      <div class="welcome-footer">
+        <button class="welcome-btn" onclick="closeWelcome()">Continue →</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="aboutModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">About This Black</div>
+      <div class="modal-body" id="aboutContent"></div>
+      <div class="modal-footer">
+        <button class="modal-btn" onclick="closeAbout()">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="bootScreen">
+    <img src="logo.png" alt="Logo" class="boot-logo" id="bootLogo">
+    <div class="boot-progress-bg">
+      <div class="boot-progress-bar" id="bootProgress"></div>
+    </div>
+  </div>
+
+  <div id="loginScreen">
+    <div class="login-avatar">🧑‍💻</div>
+    <div class="user-name">Guest User</div>
+    <button class="login-submit-btn" id="loginBtn">Sign In</button>
+  </div>
+
+  <div id="desktop">
+    <div class="menubar">
+      <div class="menubar-left">
+        <span class="menubar-item" id="appleMenuBtn">◈ Black</span>
+        <div class="apple-dropdown" id="appleDropdown">
+          <div class="dropdown-item" onclick="showAboutThisBlack()">About This Black</div>
+          <div class="dropdown-divider"></div>
+          <div class="dropdown-item" onclick="restartOS()">Restart...</div>
+          <div class="dropdown-item" onclick="shutdownOS()">Shut Down</div>
+        </div>
+        <span class="menubar-item" style="font-weight: 600;">Black</span>
+        <span class="menubar-item">File</span>
+        <span class="menubar-item">Edit</span>
+      </div>
+      <div class="menubar-right">
+        <span class="menubar-item">Wi-Fi</span>
+        <span class="menubar-item" id="clockDisplay">00:00</span>
+      </div>
+    </div>
+
+    <div class="workspace">
+      <div class="desktop-icons">
+        <div class="desktop-icon" id="iconCalculator" tabindex="1">
+          <div class="icon-placeholder">🧮</div>
+          <div class="icon-name">Calculator</div>
+        </div>
+      </div>
+
+      <div class="window" id="windowFinder">
+        <div class="window-header">
+          <div class="window-buttons">
+            <button class="win-btn btn-close" onclick="closeWindow('windowFinder')"></button>
+            <button class="win-btn btn-minimize"></button>
+            <button class="win-btn btn-maximize"></button>
+          </div>
+          <div class="window-title">Finder</div>
+        </div>
+        <div class="window-content">
+          <div class="finder-layout">
+            <div class="finder-sidebar">
+              <div class="sidebar-item active" onclick="changeFinderDir('fav')">Favorites</div>
+              <div class="sidebar-item" onclick="changeFinderDir('docs')">Documents</div>
+            </div>
+            <div class="finder-main" id="finderMainContent"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="window" id="windowBrowser">
+        <div class="window-header">
+          <div class="window-buttons">
+            <button class="win-btn btn-close" onclick="closeWindow('windowBrowser')"></button>
+            <button class="win-btn btn-minimize"></button>
+            <button class="win-btn btn-maximize"></button>
+          </div>
+          <div class="window-title">Web Browser (DuckDuckGo)</div>
+        </div>
+        <div class="window-content">
+          <iframe class="browser-frame" src="https://start.duckduckgo.com/?kae=d"></iframe>
+        </div>
+      </div>
+
+      <div class="window" id="windowTerminal">
+        <div class="window-header">
+          <div class="window-buttons">
+            <button class="win-btn btn-close" onclick="closeWindow('windowTerminal')"></button>
+            <button class="win-btn btn-minimize"></button>
+            <button class="win-btn btn-maximize"></button>
+          </div>
+          <div class="window-title">Terminal — bash — 80×24</div>
+        </div>
+        <div class="window-content">
+          <div class="terminal-body" onclick="document.getElementById('termInput').focus()">
+            <div class="terminal-output" id="termOutput">BlackOS Kernel v2026.07 loaded.&#10;Type 'help' for commands.</div>
+            <div class="terminal-input-line">
+              <span class="terminal-prompt" id="termPrompt">guest@blackos:~$</span>
+              <input type="text" class="terminal-input" id="termInput" autocomplete="off">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="window" id="windowCalculator">
+        <div class="window-header">
+          <div class="window-buttons">
+            <button class="win-btn btn-close" onclick="closeWindow('windowCalculator')"></button>
+            <button class="win-btn btn-minimize"></button>
+            <button class="win-btn btn-maximize"></button>
+          </div>
+          <div class="window-title">Calculator</div>
+        </div>
+        <div class="window-content">
+          <div class="calculator">
+            <div class="calc-display" id="calcDisplay">0</div>
+            <div class="calc-buttons" id="calcButtons"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="window" id="windowSettings">
+        <div class="window-header">
+          <div class="window-buttons">
+            <button class="win-btn btn-close" onclick="closeWindow('windowSettings')"></button>
+            <button class="win-btn btn-minimize"></button>
+            <button class="win-btn btn-maximize"></button>
+          </div>
+          <div class="window-title">Settings</div>
+        </div>
+        <div class="window-content">
+          <div class="settings-layout">
+            <div class="settings-title">Select Desktop Wallpaper:</div>
+            <div class="wallpaper-grid">
+              <div class="wallpaper-thumb" style="background-image:url('https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=300')" onclick="changeWallpaper('https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=2564')"></div>
+              <div class="wallpaper-thumb" style="background-image:url('https://images.unsplash.com/photo-1604871000636-074fa5117945?q=80&w=300')" onclick="changeWallpaper('https://images.unsplash.com/photo-1604871000636-074fa5117945?q=80&w=1974')"></div>
+              <div class="wallpaper-thumb" style="background-image:url('https://images.unsplash.com/photo-1579546929518-9e396f3cc809?q=80&w=300')" onclick="changeWallpaper('https://images.unsplash.com/photo-1579546929518-9e396f3cc809?q=80&w=2070')"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="dock-container">
+      <div class="dock">
+        <div class="dock-item" id="dockFinder" title="Finder" onclick="openWindow('windowFinder')">🧭</div>
+        <div class="dock-item" id="dockBrowser" title="Browser" onclick="openWindow('windowBrowser')">🌐</div>
+        <div class="dock-item" id="dockTerminal" title="Terminal" onclick="openWindow('windowTerminal')">🖥️</div>
+        <div class="dock-item" id="dockCalculator" title="Calculator" onclick="openWindow('windowCalculator')">🧮</div>
+        <div class="dock-item" id="dockSettings" title="Settings" onclick="openWindow('windowSettings')">⚙️</div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (function() {
+      const bootScreen = document.getElementById('bootScreen');
+      const bootProgress = document.getElementById('bootProgress');
+      const loginScreen = document.getElementById('loginScreen');
+      const desktop = document.getElementById('desktop');
+      const loginBtn = document.getElementById('loginBtn');
+      const clockDisplay = document.getElementById('clockDisplay');
+      const appleMenuBtn = document.getElementById('appleMenuBtn');
+      const appleDropdown = document.getElementById('appleDropdown');
+
+      function startBoot() {
+        bootScreen.classList.remove('hide');
+        bootProgress.classList.remove('animate');
+        void bootProgress.offsetWidth; 
+        bootProgress.classList.add('animate');
+        
+        setTimeout(() => {
+          bootScreen.classList.add('hide');
+          setTimeout(() => {
+            loginScreen.classList.add('active');
+          }, 200);
+        }, 2500);
+      }
+      startBoot();
+
+      function login() {
+        loginScreen.classList.remove('active');
+        loginScreen.classList.add('hide');
+        desktop.classList.add('active');
+        const welcomeScreen = document.getElementById('welcomeScreen');
+        setTimeout(() => {
+          welcomeScreen.classList.add('show');
+        }, 300);
+        updateClock();
+        setInterval(updateClock, 1000);
+        changeFinderDir('fav');
+      }
+
+      loginBtn.addEventListener('click', login);
+
+      function updateClock() {
+        const now = new Date();
+        clockDisplay.textContent = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
+      }
+
+      appleMenuBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        appleDropdown.style.display = appleDropdown.style.display === 'flex' ? 'none' : 'flex';
+      });
+      document.addEventListener('click', () => { appleDropdown.style.display = 'none'; });
+
+      window.restartOS = function() {
+        desktop.classList.remove('active');
+        startBoot();
+      };
+      window.shutdownOS = function() {
+        desktop.classList.remove('active');
+        bootScreen.classList.remove('hide');
+        bootProgress.style.display = 'none';
+        document.getElementById('bootLogo').style.opacity = '0.2';
+      };
+
+      window.showAboutThisBlack = function() {
+        const userAgent = navigator.userAgent;
+        let osName = "Unknown OS";
+        let browserName = "Unknown Browser";
+
+        if (userAgent.indexOf("Win") !== -1) osName = "Windows PC";
+        else if (userAgent.indexOf("Mac") !== -1) osName = "Apple Mac Hardware";
+        else if (userAgent.indexOf("Linux") !== -1) osName = "Linux Machine";
+        else if (userAgent.indexOf("Android") !== -1) osName = "Android Device";
+        else if (userAgent.indexOf("like Mac") !== -1) osName = "iOS Device";
+
+        if (userAgent.indexOf("Firefox") !== -1) browserName = "Mozilla Firefox";
+        else if (userAgent.indexOf("SamsungBrowser") !== -1) browserName = "Samsung Internet";
+        else if (userAgent.indexOf("Chrome") !== -1) browserName = "Google Chrome / Chromium";
+        else if (userAgent.indexOf("Safari") !== -1) browserName = "Apple Safari";
+        else if (userAgent.indexOf("Edge") !== -1) browserName = "Microsoft Edge";
+
+        const hardwareCores = navigator.hardwareConcurrency ? `${navigator.hardwareConcurrency} Logical Cores` : "Unknown Architecture";
+        
+        const aboutText = `System Information\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nHost Architecture: ${osName}\nActive Client Environment: ${browserName}\nProcessing Capability: ${hardwareCores}\nPlatform Graphics Module: WebKit WebGL Engine\nSystem Version: Black OS 2026.07\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`;
+
+        document.getElementById('aboutContent').textContent = aboutText;
+        document.getElementById('aboutModal').classList.add('show');
+      };
+
+      window.closeAbout = function() {
+        document.getElementById('aboutModal').classList.remove('show');
+      };
+
+      window.closeWelcome = function() {
+        const welcomeScreen = document.getElementById('welcomeScreen');
+        welcomeScreen.classList.remove('show');
+      };
+
+      window.openWindow = function(id) {
+        const win = document.getElementById(id);
+        if (!win) return;
+        win.style.display = 'flex';
+        setTimeout(() => win.classList.add('show'), 10);
+        const dockId = 'dock' + id.replace('window', '');
+        if(document.getElementById(dockId)) document.getElementById(dockId).classList.add('running');
+        bringToFront(win);
+      };
+
+      window.closeWindow = function(id) {
+        const win = document.getElementById(id);
+        if (!win) return;
+        win.classList.remove('show');
+        const dockId = 'dock' + id.replace('window', '');
+        if(document.getElementById(dockId)) document.getElementById(dockId).classList.remove('running');
+        setTimeout(() => { if (!win.classList.contains('show')) win.style.display = 'none'; }, 220);
+      };
+
+      let topZ = 200;
+      function bringToFront(win) { topZ++; win.style.zIndex = topZ; }
+
+      document.querySelectorAll('.window-header').forEach(header => {
+        header.addEventListener('mousedown', function(e) {
+          const win = header.parentElement;
+          bringToFront(win);
+          let shiftX = e.clientX - win.getBoundingClientRect().left;
+          let shiftY = e.clientY - win.getBoundingClientRect().top;
+          function moveAt(clientX, clientY) {
+            win.style.left = clientX - shiftX + 'px';
+            win.style.top = clientY - shiftY + 'px';
+          }
+          function onMouseMove(event) { moveAt(event.clientX, event.clientY); }
+          document.addEventListener('mousemove', onMouseMove);
+          document.addEventListener('mouseup', function() {
+            document.removeEventListener('mousemove', onMouseMove);
+          }, { once: true });
+        });
+      });
+
+      const dirs = {
+        fav: [{icon:'📁', name:'Projects'}, {icon:'📁', name:'Photos'}],
+        docs: [{icon:'📄', name:'notes.txt'}, {icon:'📄', name:'todo.md'}]
+      };
+      window.changeFinderDir = function(dirKey) {
+        document.querySelectorAll('.sidebar-item').forEach(el => el.classList.remove('active'));
+        if (event && event.target) {
+          event.target.classList.add('active');
+        } else {
+          const items = document.querySelectorAll('.sidebar-item');
+          if (dirKey === 'fav' && items[0]) items[0].classList.add('active');
+          if (dirKey === 'docs' && items[1]) items[1].classList.add('active');
+        }
+        const container = document.getElementById('finderMainContent');
+        if (!container) return;
+        container.innerHTML = '';
+        dirs[dirKey].forEach(item => {
+          container.innerHTML += `<div class="finder-item"><span>${item.icon}</span><span>${item.name}</span></div>`;
+        });
+      };
+
+      window.changeWallpaper = function(url) {
+        document.body.style.backgroundImage = `url('${url}')`;
+      };
+
+      const iconCalculator = document.getElementById('iconCalculator');
+      if (iconCalculator) {
+        iconCalculator.addEventListener('dblclick', () => openWindow('windowCalculator'));
+        iconCalculator.addEventListener('click', () => openWindow('windowCalculator'));
+      }
+
+      const calcDisplay = document.getElementById('calcDisplay');
+      const calcButtons = document.getElementById('calcButtons');
+      if (calcDisplay && calcButtons) {
+        let calcValue = '';
+        let calcPrevValue = '';
+        let calcOperation = null;
+
+        const calcLayout = [
+          ['7', '8', '9', '÷'],
+          ['4', '5', '6', '×'],
+          ['1', '2', '3', '-'],
+          ['0', '.', '=', '+']
+        ];
+
+        calcLayout.forEach(row => {
+          row.forEach(btn => {
+            const button = document.createElement('button');
+            button.textContent = btn;
+            button.className = 'calc-btn';
+            if (['+', '-', '×', '÷'].includes(btn)) button.className += ' operator';
+            if (btn === '=') button.className += ' equals';
+            button.onclick = () => handleCalc(btn);
+            calcButtons.appendChild(button);
+          });
+        });
+
+        function handleCalc(btn) {
+          if (btn === '=') {
+            if (calcOperation && calcPrevValue !== '' && calcValue !== '') {
+              let result;
+              const prev = parseFloat(calcPrevValue);
+              const curr = parseFloat(calcValue);
+              if (calcOperation === '+') result = prev + curr;
+              else if (calcOperation === '-') result = prev - curr;
+              else if (calcOperation === '×') result = prev * curr;
+              else if (calcOperation === '÷') result = curr !== 0 ? prev / curr : 0;
+              calcValue = result.toString();
+              calcDisplay.textContent = calcValue;
+              calcPrevValue = '';
+              calcOperation = null;
+            }
+          } else if (['+', '-', '×', '÷'].includes(btn)) {
+            if (calcValue !== '') {
+              if (calcPrevValue !== '' && calcOperation) {
+                let result;
+                const prev = parseFloat(calcPrevValue);
+                const curr = parseFloat(calcValue);
+                if (calcOperation === '+') result = prev + curr;
+                else if (calcOperation === '-') result = prev - curr;
+                else if (calcOperation === '×') result = prev * curr;
+                else if (calcOperation === '÷') result = curr !== 0 ? prev / curr : 0;
+                calcValue = result.toString();
+                calcDisplay.textContent = calcValue;
+              }
+              calcPrevValue = calcValue;
+              calcOperation = btn;
+              calcValue = '';
+            }
+          } else if (btn === '.') {
+            if (!calcValue.includes('.')) calcValue += btn;
+            calcDisplay.textContent = calcValue || '0';
+          } else {
+            calcValue += btn;
+            calcDisplay.textContent = calcValue || '0';
+          }
+        }
+      }
+    })();
+
+    (function() {
+      const termInput = document.getElementById('termInput');
+      const termOutput = document.getElementById('termOutput');
+      const termPrompt = document.getElementById('termPrompt');
+      
+      if (!termInput || !termOutput || !termPrompt) return;
+      
+      let currentPath = [];
+      const vfs = {
+        "documents": {
+          "notes.txt": "Welcome to BlackOS! This is a working text file.",
+          "todo.md": "- Fix Finder bug\n- Add Linux terminal\n- Translate to English"
+        },
+        "desktop": {},
+        "downloads": {}
+      };
+
+      let commandHistory = [];
+      let historyIndex = -1;
+
+      function getFolder(pathArray) {
+        let current = vfs;
+        for (let folder of pathArray) {
+          if (current[folder] && typeof current[folder] === 'object') {
+            current = current[folder];
+          } else {
+            return null;
+          }
+        }
+        return current;
+      }
+
+      termInput.addEventListener('keydown', function(e) {
+        if (e.key === 'ArrowUp') {
+          e.preventDefault();
+          if (commandHistory.length > 0 && historyIndex < commandHistory.length - 1) {
+            historyIndex++;
+            termInput.value = commandHistory[commandHistory.length - 1 - historyIndex];
+          }
+        } else if (e.key === 'ArrowDown') {
+          e.preventDefault();
+          if (historyIndex > 0) {
+            historyIndex--;
+            termInput.value = commandHistory[commandHistory.length - 1 - historyIndex];
+          } else if (historyIndex === 0) {
+            historyIndex = -1;
+            termInput.value = '';
+          }
+        }
+
+        if (e.key === 'Enter') {
+          const rawInput = termInput.value;
+          const trimmed = rawInput.trim();
+          if (trimmed === '') return;
+
+          commandHistory.push(rawInput);
+          historyIndex = -1;
+
+          const args = trimmed.split(' ');
+          const cmd = args[0].toLowerCase();
+          let response = '';
+          const currentDir = getFolder(currentPath);
+          const promptStr = `guest@blackos:~${currentPath.length ? '/' + currentPath.join('/') : ''}$`;
+
+          switch (cmd) {
+            case 'help':
+              response = 'Available commands: help, ls, cd, mkdir, touch, cat, rm, pwd, clear, neofetch, whoami, date, exit';
+              break;
+
+            case 'pwd':
+              response = '/' + currentPath.join('/');
+              break;
+
+            case 'whoami':
+              response = 'guest';
+              break;
+
+            case 'date':
+              response = new Date().toString();
+              break;
+
+            case 'clear':
+              termOutput.textContent = '';
+              termInput.value = '';
+              return;
+
+            case 'exit':
+              closeWindow('windowTerminal');
+              termInput.value = '';
+              return;
+
+            case 'neofetch':
+              response = '      .---.      OS: BlackOS v2026.07\n     /     \\     Kernel: WebKit JS-VFS\n     \\_.._/      Uptime: Mock active\n     //  \\\\      Shell: bash (Advanced Simulation)';
+              break;
+
+            case 'ls':
+              response = Object.keys(currentDir).join('   ') || '(directory is empty)';
+              break;
+
+            case 'cd':
+              const target = args[1];
+              if (!target || target === '~' || target === '/') {
+                currentPath = [];
+              } else if (target === '..') {
+                if (currentPath.length > 0) currentPath.pop();
+              } else {
+                if (currentDir[target] && typeof currentDir[target] === 'object') {
+                  currentPath.push(target);
+                } else {
+                  response = `cd: no such file or directory: ${target}`;
+                }
+              }
+              break;
+
+            case 'mkdir':
+              const newFolder = args[1];
+              if (!newFolder) response = 'mkdir: missing operand';
+              else if (currentDir[newFolder]) response = `mkdir: cannot create directory '${newFolder}': File exists`;
+              else currentDir[newFolder] = {};
+              break;
+
+            case 'touch':
+              const newFile = args[1];
+              if (!newFile) response = 'touch: missing file operand';
+              else if (currentDir[newFile] && typeof currentDir[newFile] === 'object') response = `touch: '${newFile}' is a directory`;
+              else currentDir[newFile] = '';
+              break;
+
+            case 'cat':
+              const fileToRead = args[1];
+              if (!fileToRead) response = 'cat: missing file name';
+              else if (currentDir[fileToRead] !== undefined) {
+                if (typeof currentDir[fileToRead] === 'object') response = `cat: ${fileToRead}: Is a directory`;
+                else response = currentDir[fileToRead] || '(file is empty)';
+              } else {
+                response = `cat: ${fileToRead}: No such file or directory`;
+              }
+              break;
+
+            case 'rm':
+              const itemToRemove = args[1];
+              if (!itemToRemove) response = 'rm: missing operand';
+              else if (currentDir[itemToRemove] !== undefined) {
+                delete currentDir[itemToRemove];
+              } else {
+                response = `rm: cannot remove '${itemToRemove}': No such file or directory`;
+              }
+              break;
+
+            default:
+              response = `bash: command not found: ${cmd}`;
+          }
+
+          termOutput.textContent += `\n${promptStr} ${rawInput}`;
+          if (response) termOutput.textContent += `\n${response}`;
+          
+          termPrompt.textContent = `guest@blackos:~${currentPath.length ? '/' + currentPath.join('/') : ''}$`;
+          
+          termInput.value = '';
+          termOutput.scrollTop = termOutput.scrollHeight;
+        }
+      });
+    })();
+  </script>
+</body>
+</html>
