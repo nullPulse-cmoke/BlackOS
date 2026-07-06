@@ -1,151 +1,129 @@
-BlackOS - Веб-десктоп в стиле macOS
-BlackOS — это полноценная веб-имитация операционной системы с macOS-подобным интерфейсом, выполненная на чистом HTML, CSS и JavaScript. Проект демонстрирует возможности веб-технологий для создания интерактивных десктоп-сред в браузере.
+# BlackOS - Web Desktop in macOS Style
 
-🚀 Особенности
-🖥️ Интерфейс
-Загрузочный экран с анимированным прогресс-баром
+BlackOS is a full-featured web-based operating system simulation with a macOS-like interface, built entirely with HTML, CSS, and JavaScript. The project demonstrates the power of web technologies in creating interactive desktop environments right in your browser.
 
-Экран входа с аватаром и кнопкой входа
+## 🚀 Features
 
-Панель меню (Menu Bar) с часами, Wi-Fi индикатором и системным меню
+### 🖥️ Interface
+- Boot screen with animated progress bar
+- Login screen with avatar and login button
+- Menu Bar with clock, Wi-Fi indicator, and system menu
+- Desktop with icons and ability to create new folders
+- Dock panel with quick access to applications and icon magnification on hover
 
-Рабочий стол с иконками и возможностью создания новых папок
+### 📱 Applications
+| Application | Description |
+|-------------|-------------|
+| Finder | File manager with sidebar and folder browsing |
+| Browser | Built-in browser with search (SearXNG) and navigation history |
+| Terminal | Command line with support for commands: help, clear, date, whoami, neofetch, ip, ping |
+| Calculator | Full-featured calculator with basic operations |
+| Settings | Three tabs: wallpapers, system information, application management |
 
-Dock-панель с быстрым доступом к приложениям и увеличением иконок при наведении
+### ⚙️ New Features in Settings (v2026.07)
+**System Tab**
+- Display OS, kernel, and architecture information
+- System uptime indicator
+- Restart and shutdown buttons
 
-📱 Приложения
-Приложение	Описание
-Finder	Файловый менеджер с боковой панелью и просмотром папок
-Браузер	Встроенный браузер с поиском (SearXNG) и историей навигации
-Терминал	Командная строка с поддержкой команд: help, clear, date, whoami, neofetch, ip, ping
-Калькулятор	Полноценный калькулятор с базовыми операциями
-Настройки	Три вкладки: обои, системная информация, управление приложениями
-⚙️ Новые функции в Настройках (v2026.07)
-Вкладка «Система»
+**Applications Tab**
+- List of all applications with status indicators
+- Toggle switches for demo application state management
 
-Отображение информации об ОС, ядре, архитектуре
+### 🎨 Visual Effects
+- Glassmorphism with blur and transparency effects
+- Window animations (scaling, fade-in)
+- Desktop wallpaper switching capability
+- Drag & drop window movement
 
-Индикатор времени работы системы (uptime)
+### 🛠️ Technologies
+- HTML5 — Interface structure
+- CSS3 — Styling, animations, responsiveness
+- Vanilla JavaScript — All application and system logic
+- Unsplash API — Background images for wallpapers
 
-Кнопки перезагрузки и выключения
+## 📦 Installation & Launch
 
-Вкладка «Приложения»
+### Local Launch
+1. Download the `index.html` file
+2. Open it in any modern browser (Chrome, Firefox, Safari, Edge)
+3. Wait for the loading animation and click "Login"
 
-Список всех приложений с индикаторами статуса
+### Online Version
+Project available at: [link to your host]
 
-Переключатели для демонстрационного управления состоянием приложений
+## 🎮 Controls
 
-🎨 Визуальные эффекты
-Размытие (blur) и прозрачность стекла (glassmorphism)
+### Keyboard Shortcuts
+- **Enter** — Confirm input (Terminal, Browser)
 
-Анимации окон (масштабирование, появление)
+### Mouse
+- Click on icon — Open application
+- Drag window title — Move window
+- Hover over Dock — Icon magnification
 
-Возможность смены обоев рабочего стола
-
-Перетаскивание окон (drag & drop)
-
-🛠️ Технологии
-HTML5 — структура интерфейса
-
-CSS3 — стилизация, анимации, адаптивность
-
-Vanilla JavaScript — вся логика приложений и системы
-
-Unsplash API — фоновые изображения для обоев
-
-📦 Установка и запуск
-Локальный запуск
-Скачайте файл index.html
-
-Откройте его в любом современном браузере (Chrome, Firefox, Safari, Edge)
-
-Дождитесь загрузки и нажмите "Войти"
-
-Онлайн-версия
-Проект доступен по ссылке: [ссылка на ваш хост]
-
-🎮 Управление
-Клавиатурные комбинации
-Enter — подтверждение ввода (терминал, браузер)
-
-Мышь
-Клик по иконке — открытие приложения
-
-Перетаскивание заголовка окна — перемещение окна
-
-Наведение на Dock — увеличение иконок
-
-📂 Структура каталогов (виртуальная)
-text
-/ (корень)
-├── Избранное/
-│   ├── Проекты/
-│   └── Фотографии/
-└── Документы/
+## 📂 Virtual Directory Structure
+```
+/ (root)
+├── Favorites/
+│   ├── Projects/
+│   └── Photos/
+└── Documents/
     ├── notes.txt
     └── todo.md
-🔍 Поисковая система
-В браузере используется поисковый движок SearXNG через прокси wukko.me:
+```
 
-Поиск в интернете через адресную строку или домашнюю страницу
+## 🔍 Search Engine
+The browser uses SearXNG search engine through the wukko.me proxy:
+- Internet search via address bar or homepage
+- Direct URL navigation support
 
-Поддержка прямой навигации по URL
+## 🧪 Testing
+The project has been tested in:
+- Chrome 120+
+- Firefox 121+
+- Safari 17+
+- Edge 120+
 
-🧪 Тестирование
-Проект протестирован в:
+## 📝 Terminal Commands
+| Command | Description |
+|---------|-------------|
+| help | List available commands |
+| clear | Clear terminal screen |
+| date | Current date and time |
+| whoami | Current username |
+| neofetch | System information |
+| ip | Local IP address |
+| ping | Network connectivity test |
 
-Chrome 120+
+## ⚠️ Known Limitations
+- **Browser**: iframe may block loading of some websites due to CORS policy
+- **File System**: Fully virtual, no real file access
+- **Wallpapers**: Internet connection required to load images
 
-Firefox 121+
+## 🚧 Development Roadmap
+- Add text editor
+- Implement system tray with notifications
+- Add theme switching (light/dark mode)
+- Integrate media player
+- Create application store
 
-Safari 17+
+## 🤝 Contributing
+If you'd like to improve BlackOS:
 
-Edge 120+
+1. Fork the repository
+2. Make your changes
+3. Create a Pull Request
 
-📝 Команды терминала
-Команда	Описание
-help	Список доступных команд
-clear	Очистка экрана терминала
-date	Текущая дата и время
-whoami	Имя текущего пользователя
-neofetch	Информация о системе
-ip	Локальный IP-адрес
-ping	Тест сетевого соединения
-⚠️ Известные ограничения
-Браузер: iframe может блокировать загрузку некоторых сайтов из-за политики CORS
+## 📄 License
+MIT License — Free use, modification, and distribution.
 
-Файловая система: полностью виртуальная, без реального доступа к файлам
+## 🌟 Support
+If you like the project, please ⭐ it on GitHub!
 
-Обои: требуют подключения к интернету для загрузки изображений
+---
+**Version:** v2026.07
+**Developer:** BlackOS Team
+**Release Date:** July 6, 2026
 
-🚧 Планы по развитию
-Добавить текстовый редактор
-
-Реализовать системный трей с уведомлениями
-
-Добавить возможность смены темы оформления (светлая/темная)
-
-Интегрировать медиаплеер
-
-Создать магазин приложений
-
-🤝 Вклад в проект
-Если вы хотите улучшить BlackOS:
-
-Форкните репозиторий
-
-Внесите изменения
-
-Создайте Pull Request
-
-📄 Лицензия
-MIT License — свободное использование, модификация и распространение.
-
-🌟 Поддержка
-Если проект вам понравился, поставьте ⭐ на GitHub!
-
-Версия: v2026.07
-Разработчик: BlackOS Team
-Дата релиза: 6 июля 2026
-
-"Веб-десктоп будущего уже сегодня!"
+*"The web desktop of tomorrow is here today!"*
